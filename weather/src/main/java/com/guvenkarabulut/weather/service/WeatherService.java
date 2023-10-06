@@ -7,7 +7,12 @@ import com.guvenkarabulut.weather.dto.WeatherDto;
 import com.guvenkarabulut.weather.dto.WeatherResponse;
 import com.guvenkarabulut.weather.model.WeatherEntity;
 import com.guvenkarabulut.weather.repository.WeatherRepository;
+import jakarta.annotation.PostConstruct;
+import org.springframework.cache.annotation.CacheConfig;
+import org.springframework.cache.annotation.CacheEvict;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestTemplate;
 
@@ -16,6 +21,7 @@ import java.time.format.DateTimeFormatter;
 import java.util.Optional;
 
 @Service
+@CacheConfig(cacheNames = {"weathers"})
 public class WeatherService {
     private final WeatherRepository weatherRepository;
     private final RestTemplate restTemplate;
@@ -26,7 +32,7 @@ public class WeatherService {
         this.weatherRepository = weatherRepository;
         this.restTemplate = restTemplate;
     }
-
+    @Cacheable(key = "#cityName")
     public WeatherDto getWeatherByCityName(String cityName){
         Optional<WeatherEntity> weatherEntityOptional = weatherRepository
                 .findFirstByRequestCityNameOrderByUpdateTimeDesc(cityName);
@@ -39,6 +45,11 @@ public class WeatherService {
                 })
                 .orElseGet(() -> WeatherDto.convert(getWeatherFromWeatherStack(cityName)));
     }
+
+    @CacheEvict(allEntries = true)
+    @PostConstruct
+    @Scheduled(fixedRateString = "10000")
+    public void clearCache() {}
 
     private WeatherEntity getWeatherFromWeatherStack(String cityName){
         ResponseEntity<String> responseEntity = restTemplate.getForEntity(getWeatherStackUrl(cityName), String.class);

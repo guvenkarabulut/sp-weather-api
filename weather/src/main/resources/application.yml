@@ -10,4 +10,19 @@ spring:
 
 weather-stack:
   api-url: http://api.weatherstack.com/current
-  acces-key: ${API-KEY:default}
+  acces-key: ${API_KEY:default}
+
+resilience4j:
+  ratelimiter:
+    instances:
+      basic:
+        limit-for-period: 10
+        limit-refresh-period: 10m
+        timeout-duration: 15s
+management:
+  endpoints:
+    web:
+      exposure:
+        include:
+          - "*"
+          - prometheus
