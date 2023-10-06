@@ -21,7 +21,6 @@ public class WeatherEntity {
     private LocalDateTime responseLocalTime;
     public WeatherEntity() {
     }
-
     public WeatherEntity(String id, String requestCityName, String cityName, String country, Integer temperature, LocalDateTime updateTime, LocalDateTime responseLocalTime) {
         this.id = id;
         this.requestCityName = requestCityName;
